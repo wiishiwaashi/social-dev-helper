@@ -1,3 +1,5 @@
+Hello, and welcome to Aguhon! I am your centralized disaster intelligence tool, ready to serve the Filipino.
+
 ## Getting Started
 First, please git pull or git clone the whole repository. 
 
