@@ -24,14 +24,17 @@ export default function Sidebar() {
     <aside className="w-[220px] shrink-0 bg-[#1e1e1e] flex flex-col h-full">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/[0.06]">
-        <Image
-          src="/LOGO.png"
-          alt="Aguhon"
-          width={33}
-          height={10}
-          className="object-contain rounded-sm"
-          priority
-        />
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="/LOGO.png"
+            alt=""
+            width={33}
+            height={10}
+            className="object-contain rounded-sm"
+            priority
+          />
+          <span className="text-base font-bold tracking-tight text-white">Aguhon</span>
+        </Link>
       </div>
 
       {/* Nav */}
