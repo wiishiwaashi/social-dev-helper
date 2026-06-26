@@ -6,6 +6,13 @@ export const lgu = {
   alertLabel: "Flood Alert Level 2",
 };
 
+export const mockUser = {
+  name: "Mika Reyes",
+  role: "CDRRMO Operations Officer",
+  email: "mika.reyes@marikina-drrm.gov.ph",
+  initials: "MR",
+};
+
 // ── Overview Stats ─────────────────────────────────────────────────────────────
 export const stats = {
   activeAlerts: 3,

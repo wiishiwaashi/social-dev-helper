@@ -8,6 +8,7 @@ import {
   Siren,
   ClipboardList,
 } from "lucide-react";
+import { mockUser } from "@/lib/data";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
@@ -51,7 +52,16 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
+      <div className="px-4 py-4 border-t border-white/[0.06]">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-[7px] bg-white/10 text-white flex items-center justify-center text-xs font-bold">
+            {mockUser.initials}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-white truncate">{mockUser.name}</p>
+            <p className="text-[10px] text-white/35 truncate">{mockUser.role}</p>
+          </div>
+        </div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20">
           Marikina City DRRM
         </p>

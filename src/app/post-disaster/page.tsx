@@ -9,6 +9,8 @@ import {
   ChevronRight,
   Send,
   Bot,
+  FileDown,
+  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -80,6 +82,7 @@ const aiDebriefMessages = [
 export default function PostDisasterPage() {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(aiDebriefMessages);
+  const [pdfReady, setPdfReady] = useState(false);
 
   const doneActions = actionItems.filter((a) => a.status === "done").length;
   const deliveredRequests = agencyRequests.filter((r) => r.status === "delivered").length;
@@ -115,13 +118,27 @@ export default function PostDisasterPage() {
             </p>
             <h1 className="text-2xl font-bold text-gray-900">Post-Disaster Debrief</h1>
           </div>
-          <Link
-            href="/pre-disaster"
-            className="flex items-center gap-1.5 text-xs font-semibold bg-[#323030] text-white px-3 py-1.5 rounded-[7px] hover:bg-[#1a1818] transition-colors"
-          >
-            View Updated Gap Analysis <TrendingUp className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPdfReady(true)}
+              className="flex items-center gap-1.5 text-xs font-semibold border border-gray-200 bg-white text-gray-700 px-3 py-1.5 rounded-[7px] hover:bg-gray-50 transition-colors"
+            >
+              {pdfReady ? <CheckCircle className="w-3.5 h-3.5 text-green-600" /> : <FileDown className="w-3.5 h-3.5" />}
+              {pdfReady ? "PDF Ready" : "Export PDF"}
+            </button>
+            <Link
+              href="/pre-disaster"
+              className="flex items-center gap-1.5 text-xs font-semibold bg-[#323030] text-white px-3 py-1.5 rounded-[7px] hover:bg-[#1a1818] transition-colors"
+            >
+              View Updated Gap Analysis <TrendingUp className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
+        {pdfReady && (
+          <div className="mt-3 ml-auto w-fit rounded-[7px] border border-green-100 bg-green-50 px-4 py-2 text-xs text-green-700">
+            Post-disaster report queued: AGUHON-CARINA-DEBRIEF.pdf
+          </div>
+        )}
       </div>
 
       {/* Incident Summary Stats */}
@@ -213,7 +230,7 @@ export default function PostDisasterPage() {
         <div className={`${CARD} flex flex-col overflow-hidden`}>
           <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
             <Bot className="w-4 h-4 text-gray-400" />
-            <h2 className="text-sm font-bold text-gray-900">AI Debrief</h2>
+            <h2 className="text-sm font-bold text-gray-900">AguhonAI Debrief</h2>
             <span className="ml-auto text-[10px] font-semibold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-[7px]">
               Post-Incident
             </span>
@@ -227,7 +244,7 @@ export default function PostDisasterPage() {
                   }`}
                 >
                   {m.role === "assistant" && (
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Aguhon AI</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">AguhonAI Debrief</p>
                   )}
                   {m.text.split("\n").map((line, j) => (
                     <p key={j} className={j > 0 ? "mt-1" : ""}>{line}</p>

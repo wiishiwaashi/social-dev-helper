@@ -10,6 +10,9 @@ import {
   ArrowRight,
   FileDown,
   ChevronRight,
+  CheckCircle,
+  Plus,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -31,6 +34,8 @@ const CARD = "bg-white rounded-[7px] shadow-[0_2px_8px_rgba(0,0,0,0.06)]";
 export default function PreDisasterPage() {
   const [selected, setSelected] = useState<Gap | null>(null);
   const [filter, setFilter] = useState<"all" | "critical" | "moderate" | "low">("all");
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [exportState, setExportState] = useState<"idle" | "ready">("idle");
 
   const criticalCount = gaps.filter((g) => g.severity === "critical" && g.status !== "resolved").length;
   const resolvedCount = gaps.filter((g) => g.status === "resolved").length;
@@ -76,11 +81,19 @@ export default function PreDisasterPage() {
             </p>
             <h1 className="text-2xl font-bold text-gray-900">Preparedness & Gap Analysis</h1>
           </div>
-          <button className="flex items-center gap-2 text-xs font-semibold text-gray-600 border border-gray-200 px-4 py-2 rounded-[7px] hover:bg-gray-50 transition-colors">
-            <FileDown className="w-3.5 h-3.5" />
-            Export Compliance Report
+          <button
+            onClick={() => setExportState("ready")}
+            className="flex items-center gap-2 text-xs font-semibold bg-[#323030] text-white px-4 py-2 rounded-[7px] hover:bg-[#1a1818] transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+          >
+            {exportState === "ready" ? <CheckCircle className="w-3.5 h-3.5" /> : <FileDown className="w-3.5 h-3.5" />}
+            {exportState === "ready" ? "Report Ready" : "Export Compliance Report"}
           </button>
         </div>
+        {exportState === "ready" && (
+          <div className="mt-3 ml-auto w-fit rounded-[7px] border border-green-100 bg-green-50 px-4 py-2 text-xs text-green-700">
+            PDF compliance report queued: DRRM-COMPLIANCE-MARIKINA-2026.pdf
+          </div>
+        )}
       </div>
 
       {/* Stat Row */}
@@ -184,7 +197,17 @@ export default function PreDisasterPage() {
 
           {/* Resource Readiness */}
           <div className={`${CARD} p-6`}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-4">Resource Inventory</p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Resource Inventory</p>
+              <button
+                onClick={() => setShowResourceForm(true)}
+                className="w-7 h-7 flex items-center justify-center rounded-[7px] bg-[#323030] text-white hover:bg-[#1a1818] transition-colors"
+                aria-label="Add resource"
+                title="Add resource"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
             <div className="space-y-3">
               {resources.map((r) => {
                 const pct = Math.round((r.available / r.total) * 100);
@@ -208,6 +231,39 @@ export default function PreDisasterPage() {
           </div>
         </div>
       </div>
+      {showResourceForm && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30 px-4">
+          <div className={`${CARD} w-full max-w-sm p-5`}>
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Mock Resource Entry</p>
+                <h3 className="text-base font-bold text-gray-900">Add inventory item</h3>
+              </div>
+              <button
+                onClick={() => setShowResourceForm(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-[7px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <input className="w-full rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400" defaultValue="Generator Sets" />
+              <div className="grid grid-cols-2 gap-2">
+                <input className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400" defaultValue="3 available" />
+                <input className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400" defaultValue="5 required" />
+              </div>
+              <input className="w-full rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400" defaultValue="City Hall Warehouse" />
+            </div>
+            <button
+              onClick={() => setShowResourceForm(false)}
+              className="mt-4 w-full rounded-[7px] bg-[#323030] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1a1818] transition-colors"
+            >
+              Save Mock Resource
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
