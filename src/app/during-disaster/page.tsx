@@ -18,6 +18,8 @@ import {
   MapPin,
   Radio,
   Bot,
+  Plus,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -60,6 +62,7 @@ export default function DuringDisasterPage() {
   const [actions, setActions] = useState<ActionItem[]>(actionItems);
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState(aiMessages);
+  const [showResourceMock, setShowResourceMock] = useState(false);
 
   const toggleStatus = (id: string) => {
     setActions((prev) =>
@@ -234,9 +237,18 @@ export default function DuringDisasterPage() {
           <div className="grid grid-cols-2 gap-4 flex-1">
             {/* Resources */}
             <div className={`${CARD} overflow-hidden`}>
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-                <Package className="w-4 h-4 text-gray-400" />
-                <h2 className="text-sm font-bold text-gray-900">Resource Tracker</h2>
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4 text-gray-400" />
+                  <h2 className="text-sm font-bold text-gray-900">Resource Tracker</h2>
+                </div>
+                <button
+                  onClick={() => setShowResourceMock(true)}
+                  className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest text-gray-500 border border-gray-200 px-2.5 py-1 rounded-[7px] hover:bg-gray-50 transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                  New
+                </button>
               </div>
               <div className="divide-y divide-gray-50">
                 {resources.map((r) => {
@@ -344,6 +356,51 @@ export default function DuringDisasterPage() {
           </div>
         </div>
       </div>
+      {showResourceMock && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30 px-4">
+          <div className={`${CARD} w-full max-w-md p-5`}>
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                  Mock Resource Tracker
+                </p>
+                <h3 className="text-base font-bold text-gray-900">Add resource update</h3>
+              </div>
+              <button
+                onClick={() => setShowResourceMock(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-[7px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+                defaultValue="Rescue Ropes"
+              />
+              <input
+                className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+                defaultValue="CDRRMO Depot"
+              />
+              <input
+                className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+                defaultValue="20 available"
+              />
+              <input
+                className="rounded-[7px] border border-gray-200 px-3 py-2 text-xs outline-none focus:border-gray-400"
+                defaultValue="30 required"
+              />
+            </div>
+            <button
+              onClick={() => setShowResourceMock(false)}
+              className="mt-4 w-full rounded-[7px] bg-[#323030] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1a1818] transition-colors"
+            >
+              Save Mock Resource
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -116,7 +116,7 @@ export default function PostDisasterPage() {
             <h1 className="text-2xl font-bold text-gray-900">Post-Disaster Debrief</h1>
           </div>
           <Link
-            href="/pre-disaster"
+            href="/pre-disaster?updated=post#gap-analysis"
             className="flex items-center gap-1.5 text-xs font-semibold bg-[#323030] text-white px-3 py-1.5 rounded-[7px] hover:bg-[#1a1818] transition-colors"
           >
             View Updated Gap Analysis <TrendingUp className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ export default function PostDisasterPage() {
                     </div>
                     {l.linkedGap && (
                       <Link
-                        href="/pre-disaster"
+                        href={`/pre-disaster?updated=post#${l.linkedGap}`}
                         className="shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-[7px] bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
                       >
                         {l.linkedGap}

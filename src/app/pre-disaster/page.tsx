@@ -12,7 +12,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 const severityConfig = {
   critical: { label: "Critical", color: "bg-red-100 text-red-600", bar: "bg-red-400" },
@@ -28,9 +29,60 @@ const statusConfig = {
 
 const CARD = "bg-white rounded-[7px] shadow-[0_2px_8px_rgba(0,0,0,0.06)]";
 
+const postDisasterUpdates = [
+  "G001: Nighttime evacuation protocol delayed field decisions during Typhoon Carina.",
+  "G002: Life jacket shortages were confirmed as a direct rescue safety risk.",
+  "G003: Radio interference showed the need for a backup communication tree.",
+];
+
+const gapChecklists: Record<string, string[]> = {
+  G001: [
+    "Confirm nighttime evacuation route captains",
+    "Assign buddy-system marshals per purok",
+    "Schedule barangay drill and radio check",
+  ],
+  G002: [
+    "Validate current life jacket count",
+    "Prepare procurement or OCD-NCR request",
+    "Set minimum stock threshold alert",
+  ],
+  G003: [
+    "Create SMS contact tree for barangay captains",
+    "Test backup channel during EOC briefing",
+    "Document fallback communication protocol",
+  ],
+  G004: [
+    "List BDRRMC members without first aid training",
+    "Coordinate training date with Red Cross",
+    "Record attendance in compliance log",
+  ],
+  G005: [
+    "Inspect candidate overflow centers",
+    "Confirm capacity and sanitation readiness",
+    "Publish activation criteria to barangays",
+  ],
+  G006: [
+    "Verify siren installation status",
+    "Run community warning test",
+    "Archive completion evidence",
+  ],
+};
+
 export default function PreDisasterPage() {
+  return (
+    <Suspense fallback={<main className="p-6 min-h-screen" />}>
+      <PreDisasterContent />
+    </Suspense>
+  );
+}
+
+function PreDisasterContent() {
+  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<Gap | null>(null);
   const [filter, setFilter] = useState<"all" | "critical" | "moderate" | "low">("all");
+  const [dismissedPostUpdates, setDismissedPostUpdates] = useState(false);
+  const [checkedItems, setCheckedItems] = useState<Record<string, string[]>>({});
+  const showPostUpdates = searchParams.get("updated") === "post" && !dismissedPostUpdates;
 
   const criticalCount = gaps.filter((g) => g.severity === "critical" && g.status !== "resolved").length;
   const resolvedCount = gaps.filter((g) => g.status === "resolved").length;
@@ -38,6 +90,22 @@ export default function PreDisasterPage() {
   const complianceScore = Math.round((resolvedCount / gaps.length) * 100);
 
   const filtered = filter === "all" ? gaps : gaps.filter((g) => g.severity === filter);
+  const activeFilterLabel = filter === "all" ? "All gaps" : `${severityConfig[filter].label} gaps`;
+
+  const handleFilterChange = (nextFilter: typeof filter) => {
+    setFilter(nextFilter);
+    setSelected(null);
+  };
+
+  const toggleChecklistItem = (gapId: string, item: string) => {
+    setCheckedItems((prev) => {
+      const current = prev[gapId] ?? [];
+      const nextItems = current.includes(item)
+        ? current.filter((checked) => checked !== item)
+        : [...current, item];
+      return { ...prev, [gapId]: nextItems };
+    });
+  };
 
   const resourceReadiness = Math.round(
     resources.reduce((sum, r) => sum + r.available / r.total, 0) / resources.length * 100
@@ -99,10 +167,36 @@ export default function PreDisasterPage() {
         ))}
       </div>
 
+      {showPostUpdates && (
+        <div className={`${CARD} px-6 py-4 border-l-4 border-amber-400`}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-1">
+                Updated From Post-Disaster Debrief
+              </p>
+              <h2 className="text-sm font-bold text-gray-900 mb-2">Gap analysis refreshed with incident lessons</h2>
+              <div className="grid grid-cols-3 gap-3">
+                {postDisasterUpdates.map((update) => (
+                  <p key={update} className="rounded-[7px] bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                    {update}
+                  </p>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => setDismissedPostUpdates(true)}
+              className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:text-gray-700"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Grid */}
       <div className="grid grid-cols-3 gap-4">
         {/* Gap List */}
-        <div className={`col-span-2 ${CARD} overflow-hidden`}>
+        <div id="gap-analysis" className={`col-span-2 ${CARD} overflow-hidden scroll-mt-6`}>
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-gray-400" />
@@ -112,7 +206,7 @@ export default function PreDisasterPage() {
               {(["all", "critical", "moderate", "low"] as const).map((f) => (
                 <button
                   key={f}
-                  onClick={() => setFilter(f)}
+                  onClick={() => handleFilterChange(f)}
                   className={`text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-[7px] transition-colors ${
                     filter === f ? "bg-[#323030] text-white" : "text-gray-400 hover:text-gray-700"
                   }`}
@@ -130,8 +224,11 @@ export default function PreDisasterPage() {
               return (
                 <div
                   key={g.id}
+                  id={g.id}
                   onClick={() => setSelected(selected?.id === g.id ? null : g)}
-                  className="px-6 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                  className={`px-6 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors scroll-mt-6 ${
+                    showPostUpdates && ["G001", "G002", "G003"].includes(g.id) ? "bg-amber-50/70" : ""
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     <StatusIcon className={`w-4 h-4 mt-0.5 shrink-0 ${stat.color}`} />
@@ -140,10 +237,45 @@ export default function PreDisasterPage() {
                         <p className="text-xs font-semibold text-gray-900">{g.description}</p>
                       </div>
                       <p className="text-[10px] text-gray-400">{g.category} · {g.id}</p>
+                      {showPostUpdates && ["G001", "G002", "G003"].includes(g.id) && (
+                        <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-amber-600">
+                          Updated from debrief
+                        </p>
+                      )}
                       {selected?.id === g.id && (
                         <div className="mt-3 bg-gray-50 rounded-[7px] px-4 py-3">
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Recommended Action</p>
                           <p className="text-xs text-gray-700 leading-relaxed">{g.recommendedAction}</p>
+                          <div className="mt-4 border-t border-gray-100 pt-3">
+                            <div className="flex items-center justify-between gap-3 mb-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                                Action Checklist
+                              </p>
+                              <span className="text-[10px] font-semibold text-gray-400">
+                                {(checkedItems[g.id] ?? []).length}/{gapChecklists[g.id]?.length ?? 0} done
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {(gapChecklists[g.id] ?? []).map((item) => {
+                                const checked = (checkedItems[g.id] ?? []).includes(item);
+                                return (
+                                  <label
+                                    key={item}
+                                    onClick={(event) => event.stopPropagation()}
+                                    className="flex items-start gap-2 rounded-[7px] bg-white px-3 py-2 text-xs text-gray-700"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => toggleChecklistItem(g.id, item)}
+                                      className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#323030]"
+                                    />
+                                    <span className={checked ? "text-gray-400 line-through" : ""}>{item}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -161,22 +293,44 @@ export default function PreDisasterPage() {
         <div className="space-y-4">
           {/* Compliance Progress */}
           <div className={`${CARD} p-6`}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-4">Compliance Breakdown</p>
-            <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                  Compliance Breakdown
+                </p>
+                <p className="text-xs text-gray-500">{activeFilterLabel} shown in gap analysis.</p>
+              </div>
+              <button
+                onClick={() => handleFilterChange("all")}
+                className={`shrink-0 text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-[7px] transition-colors ${
+                  filter === "all" ? "bg-[#323030] text-white" : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                All
+              </button>
+            </div>
+            <div className="space-y-2">
               {(["critical", "moderate", "low"] as const).map((sev) => {
                 const total = gaps.filter((g) => g.severity === sev).length;
                 const done = gaps.filter((g) => g.severity === sev && g.status === "resolved").length;
                 const pct = total === 0 ? 0 : Math.round((done / total) * 100);
                 return (
-                  <div key={sev}>
+                  <button
+                    key={sev}
+                    onClick={() => handleFilterChange(sev)}
+                    className={`w-full rounded-[7px] px-3 py-2 text-left transition-colors ${
+                      filter === sev ? "bg-gray-50 ring-1 ring-gray-200" : "hover:bg-gray-50"
+                    }`}
+                  >
                     <div className="flex justify-between text-xs mb-1.5">
                       <span className="text-gray-700 font-medium capitalize">{sev}</span>
-                      <span className="text-gray-400">{done}/{total}</span>
+                      <span className="text-gray-400">{done}/{total} resolved</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-[7px] h-1.5">
                       <div className={`h-1.5 rounded-[7px] ${severityConfig[sev].bar}`} style={{ width: `${pct}%` }} />
                     </div>
-                  </div>
+                    <p className="mt-1.5 text-[10px] text-gray-400">{pct}% compliant</p>
+                  </button>
                 );
               })}
             </div>
